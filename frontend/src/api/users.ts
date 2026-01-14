@@ -9,6 +9,13 @@ export interface User {
   created_at?: string
 }
 
+export interface LoginResponse {
+  user: Required<Pick<User, 'user_id' | 'username' | 'email'>> & {
+    role: 'user' | 'admin'
+    created_at?: string
+  }
+}
+
 export async function getUsers() {
   const { data } = await api.get<User[]>('/users')
   return data
@@ -16,6 +23,11 @@ export async function getUsers() {
 
 export async function createUser(user: Omit<User, 'user_id' | 'created_at'>) {
   const { data } = await api.post('/users', user)
+  return data
+}
+
+export async function loginUser(identifier: string, password: string) {
+  const { data } = await api.post<LoginResponse>('/auth/login', { identifier, password })
   return data
 }
 

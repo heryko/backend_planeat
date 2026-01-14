@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { createUser } from '../api/users'
 
 export function RegisterPage() {
   const [username, setUsername] = useState('')
@@ -7,9 +8,10 @@ export function RegisterPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setSuccess(null)
@@ -21,12 +23,16 @@ export function RegisterPage() {
       setError('Hasło musi mieć min. 4 znaki')
       return
     }
-    if (username === 'admin' || email === 'admin@admin.com') {
-      setError('Taki użytkownik już istnieje')
-      return
+    setLoading(true)
+    try {
+      await createUser({ username, email, password })
+      setSuccess('Konto utworzone! Możesz się zalogować.')
+      setTimeout(() => navigate('/login'), 1200)
+    } catch (e: any) {
+      setError(e?.message || 'Nie udało się utworzyć konta')
+    } finally {
+      setLoading(false)
     }
-    setSuccess('Konto utworzone! Możesz się zalogować.')
-    setTimeout(() => navigate('/login'), 1200)
   }
 
   return (
@@ -65,8 +71,9 @@ export function RegisterPage() {
         <button
           className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg font-semibold text-lg transition"
           type="submit"
+          disabled={loading}
         >
-          Zarejestruj się
+          {loading ? 'Tworzenie konta…' : 'Zarejestruj się'}
         </button>
         <div className="text-center text-gray-500 text-sm pt-2">
           Masz już konto? <a href="/login" className="text-emerald-700 hover:underline">Zaloguj się</a>

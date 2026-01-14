@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 
+const authRoutes = require('./routes/auth.routes');
+
 const usersRoutes = require('./routes/users.routes');
 const favoritesRoutes = require('./routes/favorites.routes');
 const fridgeRoutes = require('./routes/fridge.routes');
@@ -18,6 +20,7 @@ const transactionsRoutes = require('./routes/transactions.routes');
 app.use(cors({ origin: true }));
 app.use(express.json()); // obsługa JSON w body request
 
+app.use('/auth', authRoutes);
 app.use('/transactions', transactionsRoutes);
 app.use('/users', usersRoutes);
 app.use('/favorites', favoritesRoutes);

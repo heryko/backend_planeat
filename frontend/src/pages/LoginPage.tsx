@@ -1,11 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useAuth } from '../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
-
-const DEMO_USERS = [
-  { user_id: 0, username: 'admin', email: 'admin@admin.com', password: 'admin', role: 'admin' },
-  { user_id: 1, username: 'user', email: 'user@user.com', password: 'user', role: 'user' },
-] as const
+import { loginUser } from '../api/users'
 
 function LoginPage() {
   const { login } = useAuth()
@@ -16,22 +12,19 @@ function LoginPage() {
   const [touched, setTouched] = useState({ id: false, pass: false })
   const [loading, setLoading] = useState(false)
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
     setLoading(true)
-    setTimeout(() => {
-      const user = DEMO_USERS.find(
-        u => (u.username === identifier || u.email === identifier) && u.password === password
-      )
+    try {
+      const { user } = await loginUser(identifier, password)
+      login({ user_id: user.user_id, username: user.username, email: user.email, role: user.role })
+      navigate('/')
+    } catch (e: any) {
+      setError(e?.message || 'Nie udało się zalogować')
+    } finally {
       setLoading(false)
-      if (user) {
-        login({ user_id: user.user_id, username: user.username, email: user.email, role: user.role })
-        navigate('/')
-      } else {
-        setError('Nieprawidłowa nazwa/email lub hasło')
-      }
-    }, 500)
+    }
   }
 
   return (

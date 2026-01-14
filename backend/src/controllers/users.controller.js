@@ -9,12 +9,19 @@ exports.createUser = async (req, res) => {
   }
 
   try {
+    User.getByUsernameOrEmail(username, email, async (findErr, existing) => {
+      if (findErr) return res.status(500).json({ message: findErr.message });
+      if (Array.isArray(existing) && existing.length > 0) {
+        return res.status(409).json({ message: 'Użytkownik o takiej nazwie lub email już istnieje' });
+      }
+
     const password_hash = await bcrypt.hash(password, 10); // hashowanie hasła
 
     const userData = { username, email, password_hash };
     User.create(userData, (err, result) => {
       if (err) return res.status(500).json({ message: err.message });
       res.status(201).json({ message: 'Użytkownik dodany', id: result.insertId });
+    });
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
